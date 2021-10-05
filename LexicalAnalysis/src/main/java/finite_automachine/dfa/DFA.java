@@ -10,7 +10,7 @@ public class DFA {
     private DFAState entry;
 
 
-    public DFA(String regExp) throws UnknownOperationException
+    public DFA(String regExp) throws UnknownOperationException,CloneNotSupportedException
     {
         this(new NFA(regExp));
     }

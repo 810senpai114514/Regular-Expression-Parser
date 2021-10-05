@@ -16,7 +16,7 @@ public class NFA {
     private NFAState entry;
     private HashSet<Character> characterSet;
 
-    public NFA(String regExp) throws UnknownOperationException {
+    public NFA(String regExp) throws UnknownOperationException, CloneNotSupportedException {
         Stack<NFAState> states =new Stack<>();
         entry=new SingleNFAState(EPSILON);
         states.push(entry);
@@ -25,14 +25,15 @@ public class NFA {
 
 
        //以下是检测性代码
-/*
-        System.out.println("检查正则表达式");
+
+        System.out.println("检查后缀表达式");
+        System.out.print(EPSILON);
         for(char c:operations)
             System.out.print(c);
         System.out.println();
         System.out.println("检查完成");
         System.out.println();
-*/
+
         /**
         *
         * 根据调度场生成的队列进行操作
@@ -92,14 +93,29 @@ public class NFA {
          *
          *
          * */
-        int length=regExp.length();
         List<Character> regularExpression=new ArrayList<>();
 
         regularExpression.add(CONCATENATE.getOperation());
-        for(int i=0;i<length;i++)
+        for(int i=0,length=regExp.length();i<length;i++)
         {
             char c=regExp.charAt(i);
             RegulationExpressionSymbols symbol=getOperation(c);
+
+            /**
+             *
+             *
+             *      遇见转义字符/时，再取出一个操作符，并作为接受字符生成状态
+             *
+             * */
+            /*if(symbol==TRANSFER)
+            {
+                if(i>1) regularExpression.add(CONCATENATE.getOperation());
+                regularExpression.add(c);
+                i++;
+                regularExpression.add(regExp.charAt(i));
+                if(i<length-1)
+                    regularExpression.add(CONCATENATE.getOperation());
+            }*/
             /**
              *
              * 遇见+号，就将a+转化为等价的aa*形式
@@ -130,37 +146,14 @@ public class NFA {
 
             /**
              *
-             *
-             *      遇见转义字符/时，再取出一个操作符，并作为接受字符生成状态
-             *
-             * */
-            else if(symbol==TRANSFER)
-            {
-                if(i>1) regularExpression.add(CONCATENATE.getOperation());
-                regularExpression.add(c);
-                i++;
-                regularExpression.add(regExp.charAt(i));
-                if(i<length-1)
-                regularExpression.add(CONCATENATE.getOperation());
-            }
-            /**
-             *
              *      在适当的情况，添加连接符号.
              * */
             else if(i<length-1)
-                    //发现两个相连的字符，加连接号
-
-                            /*(!isOperation(c) && (!isOperation(regExp.charAt(i+1))||(isOperation(regExp.charAt(i+1))&&getOperation(regExp.charAt(i+1))==LEFT_BRACKET))
-                        ||
-                                    //发现特殊操作符，加连接号
-                            (isOperation(c) && (getOperation(c)==REPETITION||getOperation(c)==RIGHT_BRACKET)
-                                    &&((!isOperation(regExp.charAt(i+1)))||((isOperation(regExp.charAt(i+1)))&&getOperation(regExp.charAt(i+1))==LEFT_BRACKET)))))*/
-
             {
                 regularExpression.add(c);
                 RegulationExpressionSymbols next=getOperation(regExp.charAt(i+1));
                 if((symbol==NOT_A_OPERATION && ((next==NOT_A_OPERATION)||(next==LEFT_BRACKET)))
-                        ||((symbol==REPETITION||symbol==RIGHT_BRACKET)&&((next==NOT_A_OPERATION)||(next==LEFT_BRACKET))))
+                        ||((symbol==REPETITION||symbol==RIGHT_BRACKET||symbol==POSITIVE_REPETITION)&&((next==NOT_A_OPERATION)||(next==LEFT_BRACKET))||(next==TRANSFER)))
                 {
 
                     regularExpression.add(CONCATENATE.getOperation());
@@ -176,13 +169,13 @@ public class NFA {
         }
 
         //以下是检测性代码
-    /*
+
         System.out.println("待处理的正则表达式是");
         for(char c:regularExpression)
             System.out.print(c);
 
         System.out.println();
-    */
+
         /**
          *
          * 通过迪科斯彻双栈法将中缀表达式变为后缀表达式
@@ -191,9 +184,11 @@ public class NFA {
         Stack<Character> operations=new Stack<>(); //操作栈
 
         boolean hasLeftBracket=false;
-        for(char c:regularExpression)
+
+        for(int i=0,size=regularExpression.size();i<size;i++)
         {
-            if(isOperation(c)) {
+            char c=regularExpression.get(i);
+            if(isOperation(c) ) {
                 RegulationExpressionSymbols operation=getOperation(c);
                 switch (operation) {
                     //左括号入栈
@@ -210,6 +205,10 @@ public class NFA {
                         }
                         operators.pop();//左括号出栈
                         hasLeftBracket=false;
+                    }case TRANSFER -> {
+                        operations.push(TRANSFER.getOperation());
+                        operations.push(regularExpression.get(++i));
+                        operations.push(CONCATENATE.getOperation());
                     }
                     //其他操作符时
                     default -> {

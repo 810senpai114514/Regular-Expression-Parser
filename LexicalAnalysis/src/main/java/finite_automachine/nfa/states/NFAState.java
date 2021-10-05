@@ -47,12 +47,13 @@ public abstract class NFAState{
         return new PairNFAState(head,tail);
     }
 
-
+    public abstract List<NFAState> getNextStates();
     public abstract List<NFAState> getNextStates(char c);
 
     public abstract NFAState getHead();
     public abstract NFAState getTail();
     public abstract boolean end();
+
 
     public abstract void addNextState(NFAState singleNFAState);
 

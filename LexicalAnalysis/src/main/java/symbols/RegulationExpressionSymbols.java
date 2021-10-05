@@ -5,14 +5,14 @@ import common.exceptions.UnknownOperationException;
 import static symbols.Constant.EPSILON;
 
 public enum RegulationExpressionSymbols {
-    REPETITION(0,'*'),
+    REPETITION(1,'*'),
     POSITIVE_REPETITION(1,'+'),
     TRANSFER(0,'/'),
-    MERGE(1,'-'),
-    CONCATENATE(1,'.'),
-    ALTERNATION(2,'|'),
-    LEFT_BRACKET(3,'('),
-    RIGHT_BRACKET(4,')'),
+    MERGE(2,'-'),
+    CONCATENATE(2,'.'),
+    ALTERNATION(3,'|'),
+    LEFT_BRACKET(4,'('),
+    RIGHT_BRACKET(5,')'),
     NOT_A_OPERATION(10,EPSILON);
 
     final int priority;

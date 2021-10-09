@@ -58,14 +58,10 @@ public class SingleNFAState extends NFAState {
     }
 
     @Override
-    public List<NFAState> getNextStates() {
-        return this.nextNFAStates;
-    }
-
-    @Override
     public char getAccept() {
         return accept;
     }
+
 
 
 }
